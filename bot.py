@@ -11,7 +11,7 @@ from config import TELEGRAM_TOKEN, LOG_LEVEL
 from flask import Flask
 import threading
 
-app = Flask(name)
+app = Flask(_name_)
 
 @app.route("/")
 def home():
