@@ -43,7 +43,7 @@ from modules.core.help import help_handler
 from modules.core.profile import profile_handler
 from modules.core.settings import settings_handler, settings_callback_handler
 from modules.core.stats import stats_handler
-
+from modules.core.button_router import button_handler
 # Family
 from modules.family.family import family_handler
 from modules.family.tree import tree_handler, fulltree_handler
@@ -158,6 +158,7 @@ def main():
     app.add_handler(settings_handler)
     app.add_handler(settings_callback_handler)
     app.add_handler(stats_handler)
+    app.add_handler(button_handler)
     logger.info("✅ CORE: 6 commands")
     
     # FAMILY (9)
