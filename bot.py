@@ -8,7 +8,19 @@ import os
 from telegram.ext import ApplicationBuilder, CommandHandler
 
 from config import TELEGRAM_TOKEN, LOG_LEVEL
+from flask import Flask
+import threading
 
+app = Flask(name)
+
+@app.route("/")
+def home():
+    return "Bot is alive!"
+
+def run():
+    app.run(host="0.0.0.0", port=8080)
+
+threading.Thread(target=run).start()
 # Setup logging
 logging.basicConfig(
     level=LOG_LEVEL,
