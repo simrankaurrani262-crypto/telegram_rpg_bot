@@ -8,13 +8,23 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def get_display_name(user):
+    """Get display name for user - prefer first_name, then username, then fallback"""
+    if user.get('first_name'):
+        return user['first_name']
+    elif user.get('username'):
+        return f"@{user['username']}"
+    else:
+        return f"user{user['user_id']}"
+
 async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """View top players"""
     users = db.get_leaderboard('level', 10)
     
     lb_text = "<b>🏆 TOP 10 PLAYERS</b>\n\n"
     for idx, user in enumerate(users, 1):
-        lb_text += f"{idx}. @{user['username']} - Level {user['level']}\n"
+        display_name = get_display_name(user)
+        lb_text += f"{idx}. {display_name} - Level {user['level']}\n"
     
     keyboard = [
         [
@@ -40,7 +50,8 @@ async def moneyboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     lb_text = "<b>💰 RICHEST PLAYERS</b>\n\n"
     for idx, user in enumerate(users, 1):
-        lb_text += f"{idx}. @{user['username']} - {user['money']:,} 💰\n"
+        display_name = get_display_name(user)
+        lb_text += f"{idx}. {display_name} - {user['money']:,} 💰\n"
     
     await update.message.reply_text(lb_text, parse_mode="HTML")
 
