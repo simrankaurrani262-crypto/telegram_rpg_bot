@@ -124,5 +124,4 @@ async def change_job(update: Update, context: ContextTypes.DEFAULT_TYPE, new_job
         return
     
     db.update_user(user_id, {'$set': {'job': new_job}})
-    await update.message.reply_text(f"✅ You are now a {job['name']
-    }!")
+    await update.message.reply_text(f"✅ You are now a {job['name']}")
