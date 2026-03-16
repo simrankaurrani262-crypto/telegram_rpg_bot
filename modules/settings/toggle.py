@@ -118,5 +118,4 @@ def get_setting(user_id: int, setting_id: str):
         return SETTINGS.get(setting_id, {}).get('default', False)
     
     settings = user.get('settings', {})
-    return settings.get(setting_id, SETTINGS.get(setting_id, {}).get('default', Fal
-se))
+    return settings.get(setting_id, SETTINGS.get(setting_id, {}).get('default', False))
