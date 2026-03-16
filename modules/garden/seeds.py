@@ -112,5 +112,4 @@ async def buy_seed(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: 
     await query.answer(f"✅ Bought {seed['name']}!")
     
     # Refresh shop
-    await command(update, conte
-xt)
+    await command(update, context)
