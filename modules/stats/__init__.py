@@ -1,13 +1,23 @@
 """
-Stats modules
+Stats modules - Simple import
 """
 from .leaderboard import command as leaderboard_cmd
-from .moneyboard import command as moneyboard_cmd  
+from .moneyboard import command as moneyboard_cmd
 from .familyboard import command as familyboard_cmd
 
-# Export commands directly
-leaderboard = type('obj', (object,), {'command': leaderboard_cmd})
-moneyboard = type('obj', (object,), {'command': moneyboard_cmd})
-familyboard = type('obj', (object,), {'command': familyboard_cmd})
+# Create simple objects with command method
+class LeaderboardModule:
+    command = staticmethod(leaderboard_cmd)
 
-__all__ = ['leaderboard', 'moneyboard', 'familyboard']
+class MoneyboardModule:
+    command = staticmethod(moneyboard_cmd)
+
+class FamilyboardModule:
+    command = staticmethod(familyboard_cmd)
+
+leaderboard = LeaderboardModule()
+moneyboard = MoneyboardModule()
+familyboard = FamilyboardModule()
+
+__all__ = ['leaderboard', 'moneyboard', 'familyboa
+rd']
