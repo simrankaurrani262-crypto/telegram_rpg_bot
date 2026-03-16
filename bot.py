@@ -21,6 +21,7 @@ def run():
     app.run(host="0.0.0.0", port=8080)
 
 threading.Thread(target=run).start()
+
 # Setup logging
 logging.basicConfig(
     level=LOG_LEVEL,
@@ -43,17 +44,16 @@ from modules.core.help import help_handler
 from modules.core.profile import profile_handler
 from modules.core.settings import settings_handler
 from modules.core.stats import stats_handler
+
 # Family
 from modules.family.family import family_handler
-from modules.family.tree import tree_handler, fulltree_handler
-from modules.family.marry import marry_handler
+from modules.family.tree import tree_handler
+from modules.family.tree import fulltree_handler
 from modules.family.divorce import divorce_handler
-from modules.family.adopt import adopt_handler
 from modules.family.disown import disown_handler
 from modules.family.relations import parents_handler, children_handler
 
 # Friends
-from modules.friends.friend import friend_handler
 from modules.friends.unfriend import unfriend_handler
 from modules.friends.circle import circle_handler
 from modules.friends.ratings import ratings_handler
@@ -62,7 +62,6 @@ from modules.friends.suggestions import suggestions_handler
 # Economy
 from modules.economy.daily import daily_handler
 from modules.economy.account import account_handler
-from modules.economy.pay import pay_handler
 from modules.economy.deposit import deposit_handler
 from modules.economy.withdraw import withdraw_handler
 from modules.economy.jobs import job_handler, work_handler
@@ -72,8 +71,6 @@ from modules.economy.bank import bank_handler
 from modules.economy.loan import loan_handler, repay_handler
 
 # Crime
-from modules.crime.rob import rob_handler
-from modules.crime.kill import kill_handler
 from modules.crime.weapon import weapon_handler, buyweapon_handler
 from modules.crime.insurance import insurance_handler
 from modules.crime.medical import medical_handler
@@ -120,10 +117,7 @@ from modules.games.quiz import question_handler
 from modules.games.nation import nation_handler
 from modules.games.fourpics import fourpics_handler
 
-# Stats
-from modules.stats.leaderboard import leaderboard_handler, moneyboard_handler
-from modules.stats.familyboard import familyboard_handler
-from modules.stats.factoryboard import factoryboard_handler
+# Stats (remaining non-enhanced)
 from modules.stats.activity import activity_handler
 from modules.stats.moneygraph import moneygraph_handler
 
@@ -135,9 +129,29 @@ from modules.admin.adminstats import adminstats_handler
 from modules.admin.logs import logs_handler
 
 # ============================================================================
-# IMPORT ALL CALLBACK HANDLERS (CENTRALIZED) - NOW COMPLETE!
+# IMPORT NEW ENHANCEMENT MODULE
 # ============================================================================
+from modules.enhancements import (
+    # Leaderboard handlers (enhanced versions)
+    enhanced_leaderboard_handler,
+    enhanced_moneyboard_handler,
+    enhanced_familyboard_handler,
+    enhanced_factoryboard_handler,
+    # Enhanced commands
+    enhanced_marry_handler,
+    enhanced_adopt_handler,
+    enhanced_friend_handler,
+    enhanced_kill_handler,
+    enhanced_rob_handler,
+    enhanced_pay_handler,
+    # Callbacks
+    permission_callback,
+    marriage_proposal_callback,
+)
 
+# ============================================================================
+# IMPORT ALL CALLBACK HANDLERS (CENTRALIZED)
+# ============================================================================
 from modules.callbacks import (
     start_callback_handler,
     settings_callback_handler,
@@ -178,30 +192,30 @@ def main():
     app.add_handler(stats_handler)
     logger.info("✅ CORE: 6 commands")
     
-    # FAMILY (9)
+    # FAMILY (9) - with enhancements
     app.add_handler(family_handler)
     app.add_handler(tree_handler)
     app.add_handler(fulltree_handler)
-    app.add_handler(marry_handler)
+    app.add_handler(enhanced_marry_handler)   # ENHANCED
     app.add_handler(divorce_handler)
-    app.add_handler(adopt_handler)
+    app.add_handler(enhanced_adopt_handler)   # ENHANCED
     app.add_handler(disown_handler)
     app.add_handler(parents_handler)
     app.add_handler(children_handler)
-    logger.info("✅ FAMILY: 9 commands")
+    logger.info("✅ FAMILY: 9 commands (ENHANCED)")
     
-    # FRIENDS (5)
-    app.add_handler(friend_handler)
+    # FRIENDS (5) - with enhancements
+    app.add_handler(enhanced_friend_handler)  # ENHANCED
     app.add_handler(unfriend_handler)
     app.add_handler(circle_handler)
     app.add_handler(ratings_handler)
     app.add_handler(suggestions_handler)
-    logger.info("✅ FRIENDS: 5 commands")
+    logger.info("✅ FRIENDS: 5 commands (ENHANCED)")
     
-    # ECONOMY (13)
+    # ECONOMY (13) - with enhancements
     app.add_handler(daily_handler)
     app.add_handler(account_handler)
-    app.add_handler(pay_handler)
+    app.add_handler(enhanced_pay_handler)     # ENHANCED
     app.add_handler(deposit_handler)
     app.add_handler(withdraw_handler)
     app.add_handler(job_handler)
@@ -212,18 +226,18 @@ def main():
     app.add_handler(bank_handler)
     app.add_handler(loan_handler)
     app.add_handler(repay_handler)
-    logger.info("✅ ECONOMY: 13 commands")
+    logger.info("✅ ECONOMY: 13 commands (ENHANCED)")
     
-    # CRIME (8)
-    app.add_handler(rob_handler)
-    app.add_handler(kill_handler)
+    # CRIME (8) - with enhancements
+    app.add_handler(enhanced_rob_handler)     # ENHANCED
+    app.add_handler(enhanced_kill_handler)    # ENHANCED
     app.add_handler(weapon_handler)
     app.add_handler(buyweapon_handler)
     app.add_handler(insurance_handler)
     app.add_handler(medical_handler)
     app.add_handler(jail_handler)
     app.add_handler(bail_handler)
-    logger.info("✅ CRIME: 8 commands")
+    logger.info("✅ CRIME: 8 commands (ENHANCED)")
     
     # FACTORY (6)
     app.add_handler(factory_handler)
@@ -269,14 +283,14 @@ def main():
     app.add_handler(fourpics_handler)
     logger.info("✅ GAMES: 10 commands")
     
-    # STATS (6)
-    app.add_handler(leaderboard_handler)
-    app.add_handler(moneyboard_handler)
-    app.add_handler(familyboard_handler)
-    app.add_handler(factoryboard_handler)
+    # STATS (6) - with enhancements
+    app.add_handler(enhanced_leaderboard_handler)  # ENHANCED
+    app.add_handler(enhanced_moneyboard_handler)   # ENHANCED
+    app.add_handler(enhanced_familyboard_handler)  # ENHANCED
+    app.add_handler(enhanced_factoryboard_handler) # ENHANCED
     app.add_handler(activity_handler)
     app.add_handler(moneygraph_handler)
-    logger.info("✅ STATS: 6 commands")
+    logger.info("✅ STATS: 6 commands (ENHANCED)")
     
     # ADMIN (5)
     app.add_handler(ban_handler)
@@ -291,10 +305,7 @@ def main():
     logger.info("📝 Registering callback handlers (INLINE BUTTONS)...")
     logger.info("")
     
-    # ========================================================================
-    # CALLBACK HANDLERS (INLINE BUTTONS) - NOW COMPLETE!
-    # ========================================================================
-    
+    # CALLBACK HANDLERS
     app.add_handler(start_callback_handler)
     logger.info("✅ Start menu callbacks")
     
@@ -334,19 +345,25 @@ def main():
     app.add_handler(friends_callback_handler)
     logger.info("✅ Friends callbacks")
     
+    # NEW FROM ENHANCEMENTS
+    app.add_handler(permission_callback)
+    logger.info("✅ Permission callbacks (friend & adopt)")
+    
+    app.add_handler(marriage_proposal_callback)
+    logger.info("✅ Marriage proposal callbacks")
+    
     logger.info("")
     logger.info("=" * 80)
     logger.info("✅ ALL 84+ COMMAND HANDLERS REGISTERED!")
-    logger.info("✅ ALL 13 CALLBACK MODULES REGISTERED!")
+    logger.info("✅ ALL 15 CALLBACK MODULES REGISTERED! (including enhancements)")
     logger.info("=" * 80)
     logger.info("")
     logger.info("📊 SUMMARY:")
-    logger.info("   Core: 6  | Family: 9  | Friends: 5  | Economy: 13")
-    logger.info("   Crime: 8 | Factory: 6 | Garden: 9   | Market: 7")
-    logger.info("   Games: 10| Stats: 6   | Admin: 5")
+    logger.info("   Core: 6  | Family: 9 (enhanced) | Friends: 5 (enhanced)")
+    logger.info("   Economy: 13 (enhanced) | Crime: 8 (enhanced) | Factory: 6")
+    logger.info("   Garden: 9 | Market: 7 | Games: 10 | Stats: 6 (enhanced) | Admin: 5")
     logger.info("   ──────────────────────────────────")
-    logger.info("   📈 TOTAL: 84+ COMMANDS")
-    logger.info("   🔘 INLINE BUTTONS: 13 callback modules")
+    logger.info("   TOTAL: 84+ COMMANDS + Enhancements (reply-to, names, buttons, permissions)")
     logger.info("")
     logger.info("🚀 BOT IS RUNNING AND READY!")
     logger.info("")
