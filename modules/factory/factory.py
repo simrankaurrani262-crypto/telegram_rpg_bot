@@ -148,8 +148,7 @@ async def buy_factory(update: Update, context: ContextTypes.DEFAULT_TYPE, factor
     user = db.get_user(user_id)
     
     if user['money'] < f_data['price']:
-        await query.a
-            nswer
+        await query.answer
     if user['money'] < f_data['price']:
         await query.answer("❌ Not enough money!")
         return
