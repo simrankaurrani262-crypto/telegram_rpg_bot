@@ -203,7 +203,12 @@ class Database:
         """Get top users by field"""
         return list(self.db.users.find(
             {"banned": False},
-            {"user_id": 1, "username": 1, field: 1}
+            {
+                "user_id": 1,
+                "username": 1,
+                "first_name": 1,          # Added this line → अब नाम दिखेगा
+                field: 1
+            }
         ).sort(field, -1).limit(limit))
     
     def get_user_rank(self, user_id, field):
