@@ -273,6 +273,37 @@ class Database:
             upsert=True
     )
 
+    def get_top_users(self, sort_by: str, limit: int = 10):
+        """Get top users by criteria."""
+        try:
+            return list(self.db.users.find(
+                {}, 
+                {'user_id': 1, 'username': 1, sort_by: 1, 'level': 1, 'money': 1, 'bank': 1}
+            ).sort(sort_by, -1).limit(limit))
+        except Exception as e:
+            print(f"Error in get_top_users: {e}")
+            return []
+
+    def get_user_rank(self, user_id: int, sort_by: str):
+        """Get user's rank for a criteria."""
+        try:
+            user = self.get_user(user_id)
+            if not user or sort_by not in user:
+                return None
+            higher = self.db.users.count_documents({sort_by: {'$gt': user[sort_by]}})
+            return higher + 1
+        except Exception as e:
+            print(f"Error in get_user_rank: {e}")
+            return None
+
+    def get_all_families(self):
+        """Get all families."""
+        try:
+            return list(self.db.families.find({}))
+        except Exception as e:
+            print(f"Error in get_all_families: {e}")
+            return 
+            []
 """
 Add this at the bottom of your existing database.py file
 """
