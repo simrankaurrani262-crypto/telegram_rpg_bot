@@ -1,379 +1,224 @@
+#!/usr/bin/env python3
 """
-COMPLETE TELEGRAM RPG BOT - MAIN ENTRY POINT
-All 84+ Commands Fully Registered + ALL BUTTONS
+Telegram RPG Bot - Complete Implementation
 """
-import asyncio
-import logging
 import os
-from telegram.ext import ApplicationBuilder, CommandHandler
+import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    MessageHandler,
+    ConversationHandler,
+    InlineQueryHandler,
+    ContextTypes,
+    filters
+)
+from dotenv import load_dotenv
 
-from config import TELEGRAM_TOKEN, LOG_LEVEL
-from flask import Flask
-import threading
+# Load environment variables
+load_dotenv()
 
-app = Flask(__name__)
-
-@app.route("/")
-def home():
-    return "Bot is alive!"
-
-def run():
-    app.run(host="0.0.0.0", port=8080)
-
-threading.Thread(target=run).start()
-
-# Setup logging
+# Configure logging
 logging.basicConfig(
-    level=LOG_LEVEL,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('logs/bot.log'),
-        logging.StreamHandler()
-    ]
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
-os.makedirs('logs', exist_ok=True)
 
-# ============================================================================
-# IMPORT ALL COMMAND HANDLERS
-# ============================================================================
+# Import all modules
+from modules.core import start, help_cmd, profile, settings as core_settings
+from modules.family import family, tree, marry, adopt, divorce
+from modules.economy import daily, account, pay, jobs, inventory, shop, balance
+from modules.crime import rob, kill, weapons, jail
+from modules.factory import factory, hire, production
+from modules.garden import garden, plant, harvest, fertilize, seeds
+from modules.market import stand, trade, auction
+from modules.games import lottery, blackjack, slots
+from modules.stats import leaderboard, moneyboard, familyboard
+from modules.admin import ban, broadcast, logs, admin_panel
+from modules.social import relations, ratings, suggestions, interactions, requests_cmd
+from modules.cooking import cook, stove
+from modules.profile_custom import setpic, setloc, showmap
+from modules.anime import waifu
+from modules.settings import toggle
+from modules import inline_handlers
 
-# Core
-from modules.core.start import start_handler
-from modules.core.help import help_handler
-from modules.core.profile import profile_handler
-from modules.core.settings import settings_handler
-from modules.core.stats import stats_handler
+# Conversation states
+SET_PIC, SET_LOC, COOK_RECIPE, TRADE_OFFER = range(4)
 
-# Family
-from modules.family.family import family_handler
-from modules.family.tree import tree_handler
-from modules.family.tree import fulltree_handler
-from modules.family.divorce import divorce_handler
-from modules.family.disown import disown_handler
-from modules.family.relations import parents_handler, children_handler
-
-# Friends
-from modules.friends.unfriend import unfriend_handler
-from modules.friends.circle import circle_handler
-from modules.friends.ratings import ratings_handler
-from modules.friends.suggestions import suggestions_handler
-
-# Economy
-from modules.economy.daily import daily_handler
-from modules.economy.account import account_handler
-from modules.economy.deposit import deposit_handler
-from modules.economy.withdraw import withdraw_handler
-from modules.economy.jobs import job_handler, work_handler
-from modules.economy.inventory import inventory_handler
-from modules.economy.shop import shop_handler, buy_handler
-from modules.economy.bank import bank_handler
-from modules.economy.loan import loan_handler, repay_handler
-
-# Crime
-from modules.crime.weapon import weapon_handler, buyweapon_handler
-from modules.crime.insurance import insurance_handler
-from modules.crime.medical import medical_handler
-from modules.crime.jail import jail_handler
-from modules.crime.bail import bail_handler
-
-# Factory
-from modules.factory.factory import factory_handler
-from modules.factory.hire import hire_handler
-from modules.factory.fire import fire_handler
-from modules.factory.workers import workers_handler
-from modules.factory.production import production_handler
-from modules.factory.factoryupgrade import factoryupgrade_handler
-
-# Garden
-from modules.garden.garden import garden_handler
-from modules.garden.add import add_handler
-from modules.garden.plant import plant_handler
-from modules.garden.harvest import harvest_handler
-from modules.garden.fertilise import fertilise_handler
-from modules.garden.barn import barn_handler
-from modules.garden.orders import orders_handler
-from modules.garden.seeds import seeds_handler
-from modules.garden.weather import weather_handler
-
-# Market
-from modules.market.stand import stand_handler
-from modules.market.stands import stands_handler
-from modules.market.putstand import putstand_handler
-from modules.market.trade import trade_handler
-from modules.market.gift import gift_handler
-from modules.market.auction import auction_handler
-from modules.market.bid import bid_handler
-
-# Games
-from modules.games.lottery import lottery_handler
-from modules.games.blackjack import blackjack_handler
-from modules.games.slots import slots_handler
-from modules.games.dice import dice_handler
-from modules.games.trivia import trivia_handler
-from modules.games.guess import guess_handler
-from modules.games.ripple import ripple_handler
-from modules.games.quiz import question_handler
-from modules.games.nation import nation_handler
-from modules.games.fourpics import fourpics_handler
-
-# Stats (remaining non-enhanced)
-from modules.stats.activity import activity_handler
-from modules.stats.moneygraph import moneygraph_handler
-
-# Admin
-from modules.admin.ban import ban_handler
-from modules.admin.unban import unban_handler
-from modules.admin.broadcast import broadcast_handler
-from modules.admin.adminstats import adminstats_handler
-from modules.admin.logs import logs_handler
-
-# ============================================================================
-# IMPORT NEW ENHANCEMENT MODULE
-# ============================================================================
-from modules.enhancements import (
-    # Leaderboard handlers (enhanced versions)
-    enhanced_leaderboard_handler,
-    enhanced_moneyboard_handler,
-    enhanced_familyboard_handler,
-    enhanced_factoryboard_handler,
-    # Enhanced commands
-    enhanced_marry_handler,
-    enhanced_adopt_handler,
-    enhanced_friend_handler,
-    enhanced_kill_handler,
-    enhanced_rob_handler,
-    enhanced_pay_handler,
-    # Callbacks
-    permission_callback,
-    marriage_proposal_callback,
-)
-
-# ============================================================================
-# IMPORT ALL CALLBACK HANDLERS (CENTRALIZED)
-# ============================================================================
-from modules.callbacks import (
-    start_callback_handler,
-    settings_callback_handler,
-    shop_callback_handler,
-    bank_callback_handler,
-    auction_callback_handler,
-    market_callback_handler,
-    blackjack_callback_handler,
-    quiz_callback_handler,
-    trivia_callback_handler,
-    weapon_callback_handler,
-    leaderboard_callback_handler,
-    garden_callback_handler,
-    friends_callback_handler,
-)
-
-# ============================================================================
-# MAIN BOT FUNCTION
-# ============================================================================
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Log errors caused by updates."""
+    logger.warning(f'Update {update} caused error {context.error}')
+    if update and update.effective_message:
+        await update.effective_message.reply_text("❌ An error occurred. Please try again.")
 
 def main():
-    """Start the bot"""
-    logger.info("=" * 80)
-    logger.info("🤖 TELEGRAM RPG BOT - STARTING")
-    logger.info("=" * 80)
+    """Start the bot."""
+    # Create application
+    application = Application.builder().token(os.getenv('TELEGRAM_TOKEN')).build()
     
-    app = ApplicationBuilder().token(TELEGRAM_TOKEN).concurrent_updates(True).build()
+    # Core commands
+    application.add_handler(CommandHandler("start", start.command))
+    application.add_handler(CommandHandler("help", help_cmd.command))
+    application.add_handler(CommandHandler("profile", profile.command))
     
-    logger.info("")
-    logger.info("📝 Registering command handlers...")
-    logger.info("")
+    # Family commands
+    application.add_handler(CommandHandler("family", family.command))
+    application.add_handler(CommandHandler("tree", tree.command))
+    application.add_handler(CommandHandler("marry", marry.command))
+    application.add_handler(CommandHandler("adopt", adopt.command))
+    application.add_handler(CommandHandler("divorce", divorce.command))
     
-    # CORE (6)
-    app.add_handler(start_handler)
-    app.add_handler(help_handler)
-    app.add_handler(profile_handler)
-    app.add_handler(settings_handler)
-    app.add_handler(stats_handler)
-    logger.info("✅ CORE: 6 commands")
+    # Economy commands
+    application.add_handler(CommandHandler("daily", daily.command))
+    application.add_handler(CommandHandler("account", account.command))
+    application.add_handler(CommandHandler("balance", balance.command))
+    application.add_handler(CommandHandler("pay", pay.command))
+    application.add_handler(CommandHandler("job", jobs.command))
+    application.add_handler(CommandHandler("inventory", inventory.command))
+    application.add_handler(CommandHandler("shop", shop.command))
     
-    # FAMILY (9) - with enhancements
-    app.add_handler(family_handler)
-    app.add_handler(tree_handler)
-    app.add_handler(fulltree_handler)
-    app.add_handler(enhanced_marry_handler)   # ENHANCED
-    app.add_handler(divorce_handler)
-    app.add_handler(enhanced_adopt_handler)   # ENHANCED
-    app.add_handler(disown_handler)
-    app.add_handler(parents_handler)
-    app.add_handler(children_handler)
-    logger.info("✅ FAMILY: 9 commands (ENHANCED)")
+    # Crime commands
+    application.add_handler(CommandHandler("rob", rob.command))
+    application.add_handler(CommandHandler("kill", kill.command))
+    application.add_handler(CommandHandler("weapons", weapons.command))
+    application.add_handler(CommandHandler("jail", jail.command))
     
-    # FRIENDS (5) - with enhancements
-    app.add_handler(enhanced_friend_handler)  # ENHANCED
-    app.add_handler(unfriend_handler)
-    app.add_handler(circle_handler)
-    app.add_handler(ratings_handler)
-    app.add_handler(suggestions_handler)
-    logger.info("✅ FRIENDS: 5 commands (ENHANCED)")
+    # Factory commands
+    application.add_handler(CommandHandler("factory", factory.command))
+    application.add_handler(CommandHandler("hire", hire.command))
+    application.add_handler(CommandHandler("production", production.command))
     
-    # ECONOMY (13) - with enhancements
-    app.add_handler(daily_handler)
-    app.add_handler(account_handler)
-    app.add_handler(enhanced_pay_handler)     # ENHANCED
-    app.add_handler(deposit_handler)
-    app.add_handler(withdraw_handler)
-    app.add_handler(job_handler)
-    app.add_handler(work_handler)
-    app.add_handler(inventory_handler)
-    app.add_handler(shop_handler)
-    app.add_handler(buy_handler)
-    app.add_handler(bank_handler)
-    app.add_handler(loan_handler)
-    app.add_handler(repay_handler)
-    logger.info("✅ ECONOMY: 13 commands (ENHANCED)")
+    # Garden commands
+    application.add_handler(CommandHandler("garden", garden.command))
+    application.add_handler(CommandHandler("plant", plant.command))
+    application.add_handler(CommandHandler("harvest", harvest.command))
+    application.add_handler(CommandHandler("fertilize", fertilize.command))
+    application.add_handler(CommandHandler("seeds", seeds.command))
     
-    # CRIME (8) - with enhancements
-    app.add_handler(enhanced_rob_handler)     # ENHANCED
-    app.add_handler(enhanced_kill_handler)    # ENHANCED
-    app.add_handler(weapon_handler)
-    app.add_handler(buyweapon_handler)
-    app.add_handler(insurance_handler)
-    app.add_handler(medical_handler)
-    app.add_handler(jail_handler)
-    app.add_handler(bail_handler)
-    logger.info("✅ CRIME: 8 commands (ENHANCED)")
+    # Market commands
+    application.add_handler(CommandHandler("stand", stand.command))
+    application.add_handler(CommandHandler("trade", trade.command))
+    application.add_handler(CommandHandler("auction", auction.command))
     
-    # FACTORY (6)
-    app.add_handler(factory_handler)
-    app.add_handler(hire_handler)
-    app.add_handler(fire_handler)
-    app.add_handler(workers_handler)
-    app.add_handler(production_handler)
-    app.add_handler(factoryupgrade_handler)
-    logger.info("✅ FACTORY: 6 commands")
+    # Games commands
+    application.add_handler(CommandHandler("lottery", lottery.command))
+    application.add_handler(CommandHandler("blackjack", blackjack.command))
+    application.add_handler(CommandHandler("slots", slots.command))
     
-    # GARDEN (9)
-    app.add_handler(garden_handler)
-    app.add_handler(add_handler)
-    app.add_handler(plant_handler)
-    app.add_handler(harvest_handler)
-    app.add_handler(fertilise_handler)
-    app.add_handler(barn_handler)
-    app.add_handler(orders_handler)
-    app.add_handler(seeds_handler)
-    app.add_handler(weather_handler)
-    logger.info("✅ GARDEN: 9 commands")
+    # Stats commands
+    application.add_handler(CommandHandler("leaderboard", leaderboard.command))
+    application.add_handler(CommandHandler("moneyboard", moneyboard.command))
+    application.add_handler(CommandHandler("familyboard", familyboard.command))
     
-    # MARKET (7)
-    app.add_handler(stand_handler)
-    app.add_handler(stands_handler)
-    app.add_handler(putstand_handler)
-    app.add_handler(trade_handler)
-    app.add_handler(gift_handler)
-    app.add_handler(auction_handler)
-    app.add_handler(bid_handler)
-    logger.info("✅ MARKET: 7 commands")
+    # Social commands (NEW)
+    application.add_handler(CommandHandler("relations", relations.command))
+    application.add_handler(CommandHandler("ratings", ratings.command))
+    application.add_handler(CommandHandler("suggestions", suggestions.command))
+    application.add_handler(CommandHandler("interactions", interactions.command))
+    application.add_handler(CommandHandler("requests", requests_cmd.command))
     
-    # GAMES (10)
-    app.add_handler(lottery_handler)
-    app.add_handler(blackjack_handler)
-    app.add_handler(slots_handler)
-    app.add_handler(dice_handler)
-    app.add_handler(trivia_handler)
-    app.add_handler(guess_handler)
-    app.add_handler(ripple_handler)
-    app.add_handler(question_handler)
-    app.add_handler(nation_handler)
-    app.add_handler(fourpics_handler)
-    logger.info("✅ GAMES: 10 commands")
+    # Cooking commands (NEW)
+    application.add_handler(CommandHandler("cook", cook.command))
+    application.add_handler(CommandHandler("stove", stove.command))
     
-    # STATS (6) - with enhancements
-    app.add_handler(enhanced_leaderboard_handler)  # ENHANCED
-    app.add_handler(enhanced_moneyboard_handler)   # ENHANCED
-    app.add_handler(enhanced_familyboard_handler)  # ENHANCED
-    app.add_handler(enhanced_factoryboard_handler) # ENHANCED
-    app.add_handler(activity_handler)
-    app.add_handler(moneygraph_handler)
-    logger.info("✅ STATS: 6 commands (ENHANCED)")
+    # Profile commands (NEW)
+    application.add_handler(CommandHandler("setpic", setpic.command))
+    application.add_handler(CommandHandler("setloc", setloc.command))
+    application.add_handler(CommandHandler("showmap", showmap.command))
     
-    # ADMIN (5)
-    app.add_handler(ban_handler)
-    app.add_handler(unban_handler)
-    app.add_handler(broadcast_handler)
-    app.add_handler(adminstats_handler)
-    app.add_handler(logs_handler)
-    logger.info("✅ ADMIN: 5 commands")
+    # Anime commands (NEW)
+    application.add_handler(CommandHandler("waifu", waifu.command))
     
-    logger.info("")
-    logger.info("=" * 80)
-    logger.info("📝 Registering callback handlers (INLINE BUTTONS)...")
-    logger.info("")
+    # Settings commands (NEW)
+    application.add_handler(CommandHandler("toggle", toggle.command))
+    application.add_handler(CommandHandler("settings", core_settings.command))
     
-    # CALLBACK HANDLERS
-    app.add_handler(start_callback_handler)
-    logger.info("✅ Start menu callbacks")
+    # Admin commands
+    application.add_handler(CommandHandler("admin", admin_panel.command))
+    application.add_handler(CommandHandler("ban", ban.command))
+    application.add_handler(CommandHandler("broadcast", broadcast.command))
+    application.add_handler(CommandHandler("logs", logs.command))
     
-    app.add_handler(settings_callback_handler)
-    logger.info("✅ Settings callbacks")
+    # Conversation handlers
+    setpic_conv = ConversationHandler(
+        entry_points=[CommandHandler("setpic", setpic.start_conv)],
+        states={
+            SET_PIC: [MessageHandler(filters.PHOTO, setpic.handle_photo)]
+        },
+        fallbacks=[CommandHandler("cancel", setpic.cancel)]
+    )
+    application.add_handler(setpic_conv)
     
-    app.add_handler(shop_callback_handler)
-    logger.info("✅ Shop callbacks")
+    setloc_conv = ConversationHandler(
+        entry_points=[CommandHandler("setloc", setloc.start_conv)],
+        states={
+            SET_LOC: [MessageHandler(filters.TEXT & ~filters.COMMAND, setloc.handle_location)]
+        },
+        fallbacks=[CommandHandler("cancel", setloc.cancel)]
+    )
+    application.add_handler(setloc_conv)
     
-    app.add_handler(bank_callback_handler)
-    logger.info("✅ Bank callbacks")
+    # Inline query handler
+    application.add_handler(InlineQueryHandler(inline_handlers.handle_inline))
     
-    app.add_handler(auction_callback_handler)
-    logger.info("✅ Auction callbacks")
+    # Callback query handler
+    application.add_handler(CallbackQueryHandler(handle_callback))
     
-    app.add_handler(market_callback_handler)
-    logger.info("✅ Market callbacks")
+    # Error handler
+    application.add_error_handler(error_handler)
     
-    app.add_handler(blackjack_callback_handler)
-    logger.info("✅ Blackjack callbacks")
+    # Start the Bot
+    print("🤖 Bot is running...")
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
+
+async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle all callback queries."""
+    query = update.callback_query
+    await query.answer()
     
-    app.add_handler(quiz_callback_handler)
-    logger.info("✅ Quiz callbacks")
+    data = query.data
     
-    app.add_handler(trivia_callback_handler)
-    logger.info("✅ Trivia callbacks")
+    if data.startswith("buy_"):
+        await handle_buy_callback(update, context, data)
+    elif data.startswith("toggle_"):
+        await handle_toggle_callback(update, context, data)
+    elif data.startswith("recipe_"):
+        await cook.handle_recipe_callback(update, context, data)
+    elif data.startswith("waifu_"):
+        await waifu.handle_callback(update, context, data)
+    elif data.startswith("relation_"):
+        await relations.handle_callback(update, context, data)
+    elif data.startswith("request_"):
+        await requests_cmd.handle_callback(update, context, data)
+
+async def handle_buy_callback(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
+    """Handle buy callbacks."""
+    query = update.callback_query
+    user_id = query.from_user.id
     
-    app.add_handler(weapon_callback_handler)
-    logger.info("✅ Weapon callbacks")
+    if data == "buy_fertilizer":
+        from modules.garden.fertilize import buy_fertilizer
+        await buy_fertilizer(update, context, user_id)
+    elif data.startswith("buy_seed_"):
+        seed_type = data.replace("buy_seed_", "")
+        from modules.garden.seeds import buy_seed
+        await buy_seed(update, context, user_id, seed_type)
+    elif data == "buy_stove":
+        from modules.cooking.stove import buy_stove
+        await buy_stove(update, context, user_id)
+
+async def handle_toggle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
+    """Handle toggle settings callbacks."""
+    query = update.callback_query
+    user_id = query.from_user.id
     
-    app.add_handler(leaderboard_callback_handler)
-    logger.info("✅ Leaderboard callbacks")
-    
-    app.add_handler(garden_callback_handler)
-    logger.info("✅ Garden callbacks")
-    
-    app.add_handler(friends_callback_handler)
-    logger.info("✅ Friends callbacks")
-    
-    # NEW FROM ENHANCEMENTS
-    app.add_handler(permission_callback)
-    logger.info("✅ Permission callbacks (friend & adopt)")
-    
-    app.add_handler(marriage_proposal_callback)
-    logger.info("✅ Marriage proposal callbacks")
-    
-    logger.info("")
-    logger.info("=" * 80)
-    logger.info("✅ ALL 84+ COMMAND HANDLERS REGISTERED!")
-    logger.info("✅ ALL 15 CALLBACK MODULES REGISTERED! (including enhancements)")
-    logger.info("=" * 80)
-    logger.info("")
-    logger.info("📊 SUMMARY:")
-    logger.info("   Core: 6  | Family: 9 (enhanced) | Friends: 5 (enhanced)")
-    logger.info("   Economy: 13 (enhanced) | Crime: 8 (enhanced) | Factory: 6")
-    logger.info("   Garden: 9 | Market: 7 | Games: 10 | Stats: 6 (enhanced) | Admin: 5")
-    logger.info("   ──────────────────────────────────")
-    logger.info("   TOTAL: 84+ COMMANDS + Enhancements (reply-to, names, buttons, permissions)")
-    logger.info("")
-    logger.info("🚀 BOT IS RUNNING AND READY!")
-    logger.info("")
-    
-    app.run_polling(allowed_updates=['message', 'callback_query'])
+    setting = data.replace("toggle_", "")
+    from modules.settings.toggle import toggle_setting
+    await toggle_setting(update, context, user_id, setting)
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        logger.info("🛑 Bot stopped by user")
-    except Exception as e:
-        logger.error(f"❌ Critical error: {e}", exc_info=True)
+    main()
+    
