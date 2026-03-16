@@ -46,5 +46,4 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_profile_pic(user_id: int):
     """Get user's profile pic."""
     user = db.get_user(user_id)
-    return user.get('profile_pic') if user els
-  e None
+    return user.get('profile_pic') if user else None
