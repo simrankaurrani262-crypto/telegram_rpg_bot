@@ -20,5 +20,4 @@ start = StartModule()
 profile = ProfileModule()
 settings = SettingsModule()
 
-__all__ = ['start', 'profile', 'settings', 'help_comma
-nd']
+__all__ = ['start', 'profile', 'settings', 'help_command']
