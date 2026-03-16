@@ -81,5 +81,4 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE, da
             "(Use /requests to see pending requests)"
         )
     elif data == "relation_tree":
-        await query.edit_message_text("Use /tree to generate your family tree image!
-  ")
+        await query.edit_message_text("Use /tree to generate your family tree image!")
