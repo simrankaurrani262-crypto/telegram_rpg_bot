@@ -27,8 +27,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Import database first
+from database import Database
+db = Database()
+
 # Import all modules
-from modules.core import start, help_cmd, profile, settings as core_settings
+from modules.core import start, profile, settings as core_settings
+from modules.core.help import help_command
 from modules.family import family, tree, marry, adopt, divorce
 from modules.economy import daily, account, pay, jobs, inventory, shop, balance
 from modules.crime import rob, kill, weapons, jail
@@ -61,7 +66,7 @@ def main():
     
     # Core commands
     application.add_handler(CommandHandler("start", start.command))
-    application.add_handler(CommandHandler("help", help_cmd.command))
+    application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("profile", profile.command))
     
     # Family commands
@@ -200,15 +205,12 @@ async def handle_buy_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_id = query.from_user.id
     
     if data == "buy_fertilizer":
-        from modules.garden.fertilize import buy_fertilizer
-        await buy_fertilizer(update, context, user_id)
+        await fertilize.buy_fertilizer(update, context, user_id)
     elif data.startswith("buy_seed_"):
         seed_type = data.replace("buy_seed_", "")
-        from modules.garden.seeds import buy_seed
-        await buy_seed(update, context, user_id, seed_type)
+        await seeds.buy_seed(update, context, user_id, seed_type)
     elif data == "buy_stove":
-        from modules.cooking.stove import buy_stove
-        await buy_stove(update, context, user_id)
+        await stove.buy_stove(update, context, user_id)
 
 async def handle_toggle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
     """Handle toggle settings callbacks."""
@@ -216,9 +218,8 @@ async def handle_toggle_callback(update: Update, context: ContextTypes.DEFAULT_T
     user_id = query.from_user.id
     
     setting = data.replace("toggle_", "")
-    from modules.settings.toggle import toggle_setting
-    await toggle_setting(update, context, user_id, setting)
+    await toggle.toggle_setting(update, context, user_id, setting)
 
 if __name__ == '__main__':
     main()
-    
+
