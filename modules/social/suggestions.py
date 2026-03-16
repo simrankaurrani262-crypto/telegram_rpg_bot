@@ -100,5 +100,4 @@ def generate_suggestions(user_id):
             unique_suggestions.append(s)
     
     random.shuffle(unique_suggestions)
-    return unique_suggestions[:1
-0]
+    return unique_suggestions[:10]
