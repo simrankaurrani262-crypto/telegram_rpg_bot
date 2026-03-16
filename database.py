@@ -272,4 +272,11 @@ class Database:
             {'$inc': {'score': change}},
             upsert=True
     )
-        
+
+"""
+Add this at the bottom of your existing database.py file
+"""
+
+# Create global db instance
+db = Database()
+
