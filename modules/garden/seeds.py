@@ -1,93 +1,116 @@
 """
-/seeds command - View seed catalog
+Seed shop for garden
 """
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, CommandHandler
-import logging
+from telegram.ext import ContextTypes
+from database import Database
 
-logger = logging.getLogger(__name__)
+db = Database()
 
-SEED_CATALOG = {
-    "wheat": {
-        "cost": 10,
-        "emoji": "🌾",
-        "growth_time": 3600,
-        "harvest": 50,
-        "description": "Fast growing crop"
+SEEDS = {
+    'wheat': {
+        'name': '🌾 Wheat',
+        'price': 50,
+        'sell_price': 120,
+        'growth_time': 3600,  # 1 hour
+        'xp': 10
     },
-    "corn": {
-        "cost": 20,
-        "emoji": "🌽",
-        "growth_time": 5400,
-        "harvest": 75,
-        "description": "Medium growth crop"
+    'corn': {
+        'name': '🌽 Corn',
+        'price': 100,
+        'sell_price': 250,
+        'growth_time': 7200,  # 2 hours
+        'xp': 20
     },
-    "carrot": {
-        "cost": 15,
-        "emoji": "🥕",
-        "growth_time": 3600,
-        "harvest": 40,
-        "description": "Root vegetable"
+    'tomato': {
+        'name': '🍅 Tomato',
+        'price': 150,
+        'sell_price': 400,
+        'growth_time': 10800,  # 3 hours
+        'xp': 35
     },
-    "tomato": {
-        "cost": 25,
-        "emoji": "🍅",
-        "growth_time": 7200,
-        "harvest": 100,
-        "description": "Red fruit"
+    'sunflower': {
+        'name': '🌻 Sunflower',
+        'price': 200,
+        'sell_price': 550,
+        'growth_time': 14400,  # 4 hours
+        'xp': 50
     },
-    "pumpkin": {
-        "cost": 40,
-        "emoji": "🎃",
-        "growth_time": 10800,
-        "harvest": 150,
-        "description": "Large autumn crop"
+    'rose': {
+        'name': '🌹 Rose',
+        'price': 500,
+        'sell_price': 1500,
+        'growth_time': 28800,  # 8 hours
+        'xp': 100
     },
-    "lettuce": {
-        "cost": 12,
-        "emoji": "🥬",
-        "growth_time": 2700,
-        "harvest": 30,
-        "description": "Leafy vegetable"
-    },
-    "cucumber": {
-        "cost": 18,
-        "emoji": "🥒",
-        "growth_time": 4800,
-        "harvest": 60,
-        "description": "Green vegetable"
-    },
-    "potato": {
-        "cost": 22,
-        "emoji": "🥔",
-        "growth_time": 6300,
-        "harvest": 80,
-        "description": "Starchy vegetable"
-    },
+    'pumpkin': {
+        'name': '🎃 Pumpkin',
+        'price': 1000,
+        'sell_price': 3500,
+        'growth_time': 57600,  # 16 hours
+        'xp': 250
+    }
 }
 
-async def seeds_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """View seed catalog"""
-    seeds_text = "<b>🌱 SEED CATALOG</b>\n\n"
+async def command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show seed shop."""
+    user_id = update.effective_user.id
     
-    for seed_name, seed_info in SEED_CATALOG.items():
-        seeds_text += f"{seed_info['emoji']} <b>{seed_name.capitalize()}</b>\n"
-        seeds_text += f"   {seed_info['description']}\n"
-        seeds_text += f"   Cost: {seed_info['cost']} 💰\n"
-        seeds_text += f"   Growth Time: {seed_info['growth_time']}s\n"
-        seeds_text += f"   Harvest: {seed_info['harvest']} units\n\n"
+    user = db.get_user(user_id)
+    if not user:
+        await update.message.reply_text("❌ Register first!")
+        return
     
-    keyboard = [
-        [InlineKeyboardButton(f"{seed_info['emoji']} {seed_name}", 
-         callback_data=f"buy_seed_{seed_name}")] 
-        for seed_name in list(SEED_CATALOG.keys())[:5]
-    ]
+    text = "🌱 **Seed Shop**\n\n"
+    text += f"💰 Your Money: {user.get('money', 0):,} coins\n\n"
+    text += "**Available Seeds**:\n\n"
+    
+    keyboard = []
+    
+    for seed_id, seed in SEEDS.items():
+        profit = seed['sell_price'] - seed['price']
+        text += f"{seed['name']}\n"
+        text += f"  💰 Buy: {seed['price']} | Sell: {seed['sell_price']} (+{profit})\n"
+        text += f"  ⏱️ Growth: {seed['growth_time']//3600}h | XP: +{seed['xp']}\n\n"
+        
+        keyboard.append([InlineKeyboardButton(
+            f"Buy {seed['name']} - {seed['price']}💰",
+            callback_data=f"buy_seed_{seed_id}"
+        )])
+    
+    keyboard.append([InlineKeyboardButton("🌾 View My Seeds", callback_data="view_seeds")])
     
     await update.message.reply_text(
-        seeds_text,
-        parse_mode="HTML",
+        text,
+        parse_mode='Markdown',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-    logger.info("Seed catalog viewed")
 
-seeds_handler = CommandHandler('seeds', seeds_command)
+async def buy_seed(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, seed_type: str = None):
+    """Buy a seed."""
+    query = update.callback_query
+    
+    if not seed_type:
+        data = query.data
+        seed_type = data.replace("buy_seed_", "")
+    
+    if seed_type not in SEEDS:
+        await query.answer("Invalid seed type!")
+        return
+    
+    seed = SEEDS[seed_type]
+    user = db.get_user(user_id)
+    
+    if user['money'] < seed['price']:
+        await query.answer("❌ Not enough money!")
+        return
+    
+    # Deduct money and add seed
+    db.update_user(user_id, {'$inc': {'money': -seed['price']}})
+    db.add_to_inventory(user_id, f"{seed_type}_seed", 1)
+    
+    await query.answer(f"✅ Bought {seed['name']}!")
+    
+    # Refresh shop
+    await command(update, conte
+xt)
