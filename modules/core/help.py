@@ -1,129 +1,107 @@
 """
-/help command handler
+Help command
 """
-from telegram import Update
-from telegram.ext import ContextTypes, CommandHandler
-import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
 
-logger = logging.getLogger(__name__)
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show help menu."""
+    text = """
+🎮 **RPG Bot Commands**
 
-HELP_TEXT = """
-<b>🎮 TELEGRAM RPG BOT - COMMAND HELP</b>
-
-<b>📌 CORE COMMANDS</b>
-/start - Start the bot
+**Core:**
+/start - Register/start bot
+/help - Show this help
 /profile - View your profile
-/stats - View your statistics
-/help - Show this help message
-/settings - Adjust settings
+/settings - Bot settings
 
-<b>👨‍👩‍👧‍👦 FAMILY COMMANDS</b>
-/family - View family info
-/tree - Generate family tree (IMAGE)
-/fulltree - Full family tree with all relatives
-/adopt - Adopt someone
+**Family:**
+/family - Family info
+/tree - Family tree image
 /marry - Marry someone
-/divorce - Divorce your partner
-/disown - Disown a child
-/parents - View parents
-/children - View children
+/adopt - Adopt someone
+/divorce - Divorce partner
 
-<b>👥 FRIEND COMMANDS</b>
-/friend - Add friend
-/unfriend - Remove friend
-/circle - Friend circle
-/ratings - Friend ratings
-/suggestions - Friend suggestions
+**Economy:**
+/daily - Daily reward (100💰)
+/balance - Detailed balance
+/account - Bank account
+/pay - Pay someone
+/job - Work and earn
+/shop - Buy items
+/inventory - Your items
 
-<b>💰 ECONOMY COMMANDS</b>
-/daily - Claim daily reward (100 coins)
-/account - View account balance
-/pay @username amount - Pay another player
-/deposit amount - Deposit to bank
-/withdraw amount - Withdraw from bank
-/job - View job info
-/work - Work to earn money
-/shop - View shop
-/buy item_id - Buy an item
-/inventory - View inventory
-/bank - Bank information
-/loan amount - Take a loan
-/repay amount - Repay loan
-
-<b>⚔️ CRIME COMMANDS</b>
-/rob @username - Rob another player
-/kill @username - Attack someone
-/weapon - View weapons
-/buyweapon - Buy a weapon
-/insurance - View insurance
-/medical - Get medical help
+**Crime:**
+/rob - Rob someone
+/kill - Attack player
+/weapons - Buy weapons
 /jail - Check jail status
-/bail - Pay to get out of jail
 
-<b>🏭 FACTORY COMMANDS</b>
-/factory - View your factory
-/hire - Hire a worker
-/fire - Fire a worker
-/workers - View workers
-/production - View production status
-/factoryupgrade - Upgrade factory
+**Factory:**
+/factory - Your factory
+/hire - Hire workers
+/production - Manage production
 
-<b>🌾 GARDEN COMMANDS</b>
-/garden - View your garden
-/add - Add a plot to garden
-/plant seed_id - Plant a seed
+**Garden:**
+/garden - Your farm
+/plant - Plant crops
 /harvest - Harvest crops
-/fertilise plot_id - Fertilise a plot
-/barn - View barn storage
-/orders - View orders
-/seeds - View seed catalog
-/weather - Check weather
+/fertilize - Use fertilizer
+/seeds - Buy seeds
 
-<b>🛒 MARKET COMMANDS</b>
-/stand - View your market stand
-/stands - View all market stands
-/putstand item_id amount price - Put item on stand
-/trade - Trade with others
-/gift @username item_id - Gift to someone
-/auction - View auctions
-/bid auction_id amount - Bid on auction
+**Market:**
+/stand - Your market stall
+/trade - Trade with players
+/auction - Auction house
 
-<b>🎲 GAMES COMMANDS</b>
-/lottery - Lottery game
+**Social:**
+/relations - Family relations
+/ratings - User ratings
+/suggestions - Friend suggestions
+/interactions - Social actions
+/requests - Pending requests
+
+**Cooking:**
+/cook - Cook food
+/stove - Buy/upgrade stove
+
+**Profile:**
+/setpic - Set profile photo
+/setloc - Set location
+/showmap - World map
+
+**Anime:**
+/waifu - Collect waifus
+
+**Games:**
+/lottery - Try your luck
 /blackjack - Play blackjack
-/slots - Play slots
-/dice - Roll dice
-/trivia - Answer trivia
-/guess - Guess number
-/ripple - Ripple game
-/question - Answer questions
-/nation - Nation game
-/4p - Four Pics One Word
+/slots - Slot machine
 
-<b>📊 LEADERBOARD COMMANDS</b>
+**Stats:**
 /leaderboard - Top players
 /moneyboard - Richest players
 /familyboard - Largest families
-/factoryboard - Best factories
-/activity - Most active players
-/moneygraph - Money graph
 
-<b>⚙️ ADMIN COMMANDS</b> (Admins only)
-/ban @username reason - Ban a user
-/unban @username - Unban a user
-/broadcast message - Send message to all users
-/adminstats - View admin statistics
-/logs - View bot logs
+**Admin:**
+/admin - Admin panel
+/ban - Ban user
+/broadcast - Send message to all
+/logs - View logs
 
-<b>📝 Tips:</b>
-- Use /daily to earn coins every 24 hours
-- Build a family to gain advantages
-- Invest in a factory for passive income
-- Check /leaderboard to compete with others
+Use /toggle to change settings!
 """
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Help command"""
-    await update.message.reply_text(HELP_TEXT, parse_mode="HTML")
-
-help_handler = CommandHandler('help', help_command)
+    
+    keyboard = [
+        [InlineKeyboardButton("💰 Economy", callback_data="help_economy"),
+         InlineKeyboardButton("👪 Family", callback_data="help_family")],
+        [InlineKeyboardButton("🎮 Games", callback_data="help_games"),
+         InlineKeyboardButton("🏭 Factory", callback_data="help_factory")]
+    ]
+    
+    await update.message.reply_text(
+        text,
+        parse_mode='Markdown',
+        reply_markup=InlineKeyboardMarkup(
+    keyboard)
+    )
