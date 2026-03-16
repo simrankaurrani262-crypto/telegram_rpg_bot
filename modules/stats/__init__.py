@@ -19,5 +19,4 @@ leaderboard = LeaderboardModule()
 moneyboard = MoneyboardModule()
 familyboard = FamilyboardModule()
 
-__all__ = ['leaderboard', 'moneyboard', 'familyboa
-rd']
+__all__ = ['leaderboard', 'moneyboard', 'familyboard']
