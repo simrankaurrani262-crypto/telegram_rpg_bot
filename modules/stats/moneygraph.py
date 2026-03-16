@@ -1,64 +1,56 @@
 """
-/moneygraph command - Generate money chart
+Money/Rich list leaderboard
 """
-from telegram import Update
-from telegram.ext import ContextTypes, CommandHandler
-from database import db
-import matplotlib.pyplot as plt
-import matplotlib
-import io
-import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
+from database import Database
 
-logger = logging.getLogger(__name__)
+db = Database()
 
-matplotlib.use('Agg')
-
-async def moneygraph_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Generate money graph"""
+async def command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show richest players leaderboard."""
+    # Get top 10 richest users
+    top_users = db.get_top_users('money', limit=10)
+    
+    text = "💰 **Richest Players**\n\n"
+    
+    medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
+    
+    total_money = 0
+    
+    for i, user in enumerate(top_users):
+        medal = medals[i] if i < 10 else f"{i+1}."
+        username = user.get('username') or f"User{user['user_id']}"
+        money = user.get('money', 0)
+        bank = user.get('bank', 0)
+        total = money + bank
+        total_money += total
+        
+        text += f"{medal} **{username}**\n"
+        text += f"   👛 {money:,} | 🏦 {bank:,} = **{total:,}**💰\n\n"
+    
+    # Add statistics
+    text += f"📊 **Economy Stats**\n"
+    text += f"Top 10 Total: {total_money:,}💰\n"
+    
+    # Get user's rank
     user_id = update.effective_user.id
-    
     user = db.get_user(user_id)
-    if not user:
-        await update.message.reply_text("❌ Please use /start to register first")
-        return
     
-    # Create figure
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+    if user:
+        user_rank = db.get_user_rank(user_id, 'money')
+        user_total = user.get('money', 0) + user.get('bank', 0)
+        text += f"\n📍 Your Position: #{user_rank} ({user_total:,}💰)"
     
-    # Pie chart: Wallet vs Bank
-    labels = ['Wallet', 'Bank']
-    sizes = [user['money'], user['bank']]
-    colors = ['#FFD700', '#4169E1']
+    keyboard = [
+        [InlineKeyboardButton("🏆 Overall", callback_data="lb_overall"),
+         InlineKeyboardButton("👪 Family", callback_data="lb_family")],
+        [InlineKeyboardButton("📊 Graph", callback_data="money_graph")]
+    ]
     
-    ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-    ax1.set_title('Wallet vs Bank Balance')
+    await update.message.reply_text(
+        text,
+        parse_mode='Markdown',
+        reply_markup=InlineKeyboardMarkup(keyboard)
     
-    # Bar chart: Money comparison with leaderboard
-    top_users = db.get_leaderboard('money', 5)
-    names = [db.get_user(u['user_id'])['username'][:10] if db.get_user(u['user_id']) else 'Unknown' 
-             for u in top_users]
-    money = [u['money'] for u in top_users]
-    
-    ax2.bar(names, money, color='#32CD32')
-    ax2.set_title('Top 5 Richest Players')
-    ax2.set_ylabel('Money (💰)')
-    plt.xticks(rotation=45)
-    
-    # Save to bytes
-    buf = io.BytesIO()
-    plt.tight_layout()
-    plt.savefig(buf, format='png', dpi=100)
-    plt.close()
-    buf.seek(0)
-    
-    # Send graph
-    caption = f"""
-Your Money: {user['money']:,} 💰
-Bank Balance: {user['bank']:,} 💰
-Total: {user['money'] + user['bank']:,} 💰
-"""
-    
-    await update.message.reply_photo(photo=buf, caption=caption)
-    logger.info(f"Money graph generated for {user_id}")
-
-moneygraph_handler = CommandHandler('moneygraph', moneygraph_command)
+    )
