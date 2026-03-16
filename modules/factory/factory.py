@@ -150,3 +150,34 @@ async def buy_factory(update: Update, context: ContextTypes.DEFAULT_TYPE, factor
     if user['money'] < f_data['price']:
         await query.a
             nswer
+    if user['money'] < f_data['price']:
+        await query.answer("❌ Not enough money!")
+        return
+    
+    # Check if already has factory
+    if db.get_factory(user_id):
+        await query.answer("You already own a factory!")
+        return
+    
+    # Create factory
+    db.create_factory(user_id, {
+        'type': factory_type,
+        'workers': [],
+        'storage': {},
+        'active_production': [],
+        'total_produced': 0,
+        'total_earnings': 0,
+        'created_at': datetime.now()
+    })
+    
+    # Deduct money
+    db.update_user(user_id, {'$inc': {'money': -f_data['price']}})
+    
+    await query.answer(f"✅ Purchased {f_data['name']}!")
+    await query.edit_message_text(
+        f"🏭 **Factory Purchased!**\n\n"
+        f"You now own: {f_data['name']}\n"
+        f"Start hiring workers with /hire\n"
+        f"Begin production with /production"
+)
+    
