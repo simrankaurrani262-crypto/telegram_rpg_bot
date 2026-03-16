@@ -76,5 +76,4 @@ async def rate_user(update: Update, context: ContextTypes.DEFAULT_TYPE, target_i
         'timestamp': datetime.now()
     })
     
-    return True, "Rating submitted
-  !"
+    return True, "Rating submitted!"
