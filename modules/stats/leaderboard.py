@@ -1,59 +1,47 @@
 """
-/leaderboard command - View leaderboards
+Leaderboard commands
 """
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, CommandHandler
-from database import db
-import logging
+from telegram.ext import ContextTypes
+from database import Database
 
-logger = logging.getLogger(__name__)
+db = Database()
 
-def get_display_name(user):
-    """Get display name for user - prefer first_name, then username, then fallback"""
-    if user.get('first_name'):
-        return user['first_name']
-    elif user.get('username'):
-        return f"@{user['username']}"
-    else:
-        return f"user{user['user_id']}"
-
-async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """View top players"""
-    users = db.get_leaderboard('level', 10)
+async def command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show general leaderboard."""
+    # Get top 10 users by experience
+    top_users = db.get_top_users('experience', limit=10)
     
-    lb_text = "<b>🏆 TOP 10 PLAYERS</b>\n\n"
-    for idx, user in enumerate(users, 1):
-        display_name = get_display_name(user)
-        lb_text += f"{idx}. {display_name} - Level {user['level']}\n"
+    text = "🏆 **Overall Leaderboard**\n\n"
+    
+    medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
+    
+    for i, user in enumerate(top_users):
+        medal = medals[i] if i < 10 else f"{i+1}."
+        username = user.get('username') or f"User{user['user_id']}"
+        level = user.get('level', 1)
+        xp = user.get('experience', 0)
+        
+        text += f"{medal} **{username}**\n"
+        text += f"   Level {level} ({xp:,} XP)\n\n"
+    
+    # Get user's rank
+    user_id = update.effective_user.id
+    user_rank = db.get_user_rank(user_id, 'experience')
+    
+    if user_rank:
+        text += f"📊 Your Rank: #{user_rank}\n"
     
     keyboard = [
-        [
-            InlineKeyboardButton("💰 Money", callback_data="lb_money"),
-            InlineKeyboardButton("⭐ Level", callback_data="lb_level"),
-        ],
-        [
-            InlineKeyboardButton("👨‍👩‍👧‍👦 Family", callback_data="lb_family"),
-            InlineKeyboardButton("🏭 Factory", callback_data="lb_factory"),
-        ],
+        [InlineKeyboardButton("💰 Money", callback_data="lb_money"),
+         InlineKeyboardButton("👪 Family", callback_data="lb_family")],
+        [InlineKeyboardButton("⭐ XP", callback_data="lb_xp"),
+         InlineKeyboardButton("🏆 Wins", callback_data="lb_wins")]
     ]
     
     await update.message.reply_text(
-        lb_text,
-        parse_mode="HTML",
+        text,
+        parse_mode='Markdown',
         reply_markup=InlineKeyboardMarkup(keyboard)
+    
     )
-    logger.info(f"Leaderboard viewed by {update.effective_user.id}")
-
-async def moneyboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """View richest players"""
-    users = db.get_leaderboard('money', 10)
-    
-    lb_text = "<b>💰 RICHEST PLAYERS</b>\n\n"
-    for idx, user in enumerate(users, 1):
-        display_name = get_display_name(user)
-        lb_text += f"{idx}. {display_name} - {user['money']:,} 💰\n"
-    
-    await update.message.reply_text(lb_text, parse_mode="HTML")
-
-leaderboard_handler = CommandHandler('leaderboard', leaderboard_command)
-moneyboard_handler = CommandHandler('moneyboard', moneyboard_command)
