@@ -173,6 +173,5 @@ async def show_all_waifus(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def set_favorite(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Set favorite waifu."""
     await update.callback_query.edit_message_text(
-        "💝 Send the name of your favorite waifu from your collection
-!"
+        "💝 Send the name of your favorite waifu from your collection!"
 )
