@@ -77,5 +77,4 @@ async def ban_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db.ban_user(target_id, reason, user_id)
         await update.message.reply_text(f"🔨 Banned user {target_id}\nReason: {reason}")
     except:
-        await update.message.reply_text("Usage: /admin_ban <user_id> <reas
-on>")
+        await update.message.reply_text("Usage: /admin_ban <user_id> <reason>")
