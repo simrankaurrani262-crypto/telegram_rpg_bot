@@ -78,5 +78,4 @@ def calculate_properties_value(user_id):
     total = 0
     for prop in properties:
         total += prop.get('value', 0)
-    return to
-tal
+    return total
