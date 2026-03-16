@@ -79,5 +79,4 @@ async def handle_location(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel."""
     await update.message.reply_text("❌ Cancelled.")
-    return ConversationHandl
-er.END
+    return ConversationHandler.END
