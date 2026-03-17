@@ -179,4 +179,7 @@ async def buy_factory(update: Update, context: ContextTypes.DEFAULT_TYPE, factor
         f"Start hiring workers with /hire\n"
         f"Begin production with /production"
 )
-    
+
+from telegram.ext import CommandHandler
+
+factory_handler = CommandHandler('factory', command)
