@@ -5,7 +5,9 @@ from datetime import datetime, timedelta
 
 class Database:
     # ... existing code ...
-    
+    def get_user(self, user_id):
+    """Get user by ID"""
+    return self.db.users.find_one({"user_id": user_id})
     # ===== FRIEND SYSTEM =====
     def get_friends(self, user_id):
         """Get user's friends list."""
