@@ -31,3 +31,5 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 settings_handler = CommandHandler('settings', settings_command)
+
+command = settings_handler
