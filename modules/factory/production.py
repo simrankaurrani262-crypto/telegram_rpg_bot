@@ -210,3 +210,6 @@ async def collect_production(update: Update, context: ContextTypes.DEFAULT_TYPE)
         f"Use /factory to manage storage"
     )
     
+from telegram.ext import CommandHandler
+
+production_handler = CommandHandler('production', command)
