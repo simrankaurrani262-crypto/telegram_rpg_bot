@@ -54,3 +54,7 @@ async def command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(keyboard)
     
     )
+
+from telegram.ext import CommandHandler
+
+moneygraph_handler = CommandHandler('moneygraph', command)
