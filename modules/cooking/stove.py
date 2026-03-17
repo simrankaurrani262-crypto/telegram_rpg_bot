@@ -123,3 +123,7 @@ async def buy_stove(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id:
         f"You now own: {stove_data['name']}\n"
         f"Use /cook to start cooking delicious meals!"
 )
+
+from telegram.ext import CommandHandler
+
+stove_handler = CommandHandler('stove', command)
