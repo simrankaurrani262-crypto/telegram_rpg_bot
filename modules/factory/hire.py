@@ -128,3 +128,7 @@ async def pay_workers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db.update_worker_earnings(user_id, total_salary)
     
     return total_salary
+
+from telegram.ext import CommandHandler
+
+hire_handler = CommandHandler('hire', command)
