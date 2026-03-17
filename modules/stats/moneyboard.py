@@ -57,3 +57,7 @@ async def command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"❌ Error loading moneyboard: {str(e)}"
                  )
+
+from telegram.ext import CommandHandler
+
+moneygraph_handler = CommandHandler('moneygraph', command)
