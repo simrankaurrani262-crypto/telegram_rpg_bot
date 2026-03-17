@@ -1,13 +1,42 @@
 """
-Database helper methods - Add these to your existing database.py
+Database helper methods for Telegram RPG Bot
 """
 from datetime import datetime, timedelta
+from pymongo import MongoClient
+from config import MONGO_URI, DB_NAME
+
 
 class Database:
-    # ... existing code ...
+    def __init__(self):
+        """Initialize database connection"""
+        self.client = MongoClient(MONGO_URI)
+        self.db = self.client[DB_NAME]
+    
     def get_user(self, user_id):
-    """Get user by ID"""
-    return self.db.users.find_one({"user_id": user_id})
+        """Get user by ID"""
+        return self.db.users.find_one({"user_id": user_id})
+    
+    def create_user(self, user_id, username):
+        """Create new user"""
+        user_data = {
+            "user_id": user_id,
+            "username": username,
+            "money": 0,
+            "bank": 0,
+            "level": 1,
+            "experience": 0,
+            "created_at": datetime.now(),
+            "last_active": datetime.now()
+        }
+        return self.db.users.insert_one(user_data)
+    
+    def update_user(self, user_id, data):
+        """Update user data"""
+        return self.db.users.update_one(
+            {"user_id": user_id},
+            {"$set": data}
+        )
+    
     # ===== FRIEND SYSTEM =====
     def get_friends(self, user_id):
         """Get user's friends list."""
@@ -273,19 +302,19 @@ class Database:
             {'user1': min(user_id, target_id), 'user2': max(user_id, target_id)},
             {'$inc': {'score': change}},
             upsert=True
-    )
-
+        )
+    
     def get_top_users(self, sort_by: str, limit: int = 10):
         """Get top users by criteria."""
         try:
             return list(self.db.users.find(
-                {}, 
+                {},
                 {'user_id': 1, 'username': 1, sort_by: 1, 'level': 1, 'money': 1, 'bank': 1}
             ).sort(sort_by, -1).limit(limit))
         except Exception as e:
             print(f"Error in get_top_users: {e}")
             return []
-
+    
     def get_user_rank(self, user_id: int, sort_by: str):
         """Get user's rank for a criteria."""
         try:
@@ -297,18 +326,15 @@ class Database:
         except Exception as e:
             print(f"Error in get_user_rank: {e}")
             return None
-
+    
     def get_all_families(self):
         """Get all families."""
         try:
             return list(self.db.families.find({}))
         except Exception as e:
             print(f"Error in get_all_families: {e}")
-            return 
-            []
-"""
-Add this at the bottom of your existing database.py file
-"""
+            return []
+
 
 # Create global db instance
 db = Database()
