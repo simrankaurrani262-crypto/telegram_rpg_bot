@@ -127,5 +127,4 @@ async def pay_workers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db.update_user(user_id, {'$inc': {'money': -total_salary}})
     db.update_worker_earnings(user_id, total_salary)
     
-    return total_sa
-    lary
+    return total_salary
