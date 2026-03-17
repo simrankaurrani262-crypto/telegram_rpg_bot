@@ -125,3 +125,8 @@ async def change_job(update: Update, context: ContextTypes.DEFAULT_TYPE, new_job
     
     db.update_user(user_id, {'$set': {'job': new_job}})
     await update.message.reply_text(f"✅ You are now a {job['name']}")
+
+from telegram.ext import CommandHandler
+
+job_handler = CommandHandler('job', command)
+work_handler = CommandHandler('work', work)
