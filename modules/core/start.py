@@ -67,4 +67,6 @@ async def command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 # Alias for backward compatibility
-start_handler = command
+from telegram.ext import CommandHandler
+
+start_handler = CommandHandler("start", command)
