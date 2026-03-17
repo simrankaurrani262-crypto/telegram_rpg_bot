@@ -80,5 +80,8 @@ def calculate_generations(family):
     if family.get('grandparents') or family.get('grandchildren'):
         generations += 1
     
-    return min(generations, 
-    3)
+    return min(generations,3)
+
+from telegram.ext import CommandHandler
+
+familyboard_handler = CommandHandler('familyboard', command)
