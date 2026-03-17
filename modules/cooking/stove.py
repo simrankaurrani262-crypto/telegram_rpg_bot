@@ -4,7 +4,7 @@ Stove management for cooking
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from database import Database
-
+from telegram.ext import CommandHandler
 db = Database()
 
 STOVE_TYPES = {
