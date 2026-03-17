@@ -71,7 +71,7 @@ from modules.economy.bank import bank_handler
 from modules.economy.loan import loan_handler, repay_handler
 
 # Crime
-from modules.crime.weapon import weapon_handler, buyweapon_handler
+from modules.crime.weapons import weapon_handler, buyweapon_handler
 from modules.crime.insurance import insurance_handler
 from modules.crime.medical import medical_handler
 from modules.crime.jail import jail_handler
