@@ -46,3 +46,5 @@ async def profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Profile viewed by {user_id}")
 
 profile_handler = CommandHandler('profile', profile)
+
+command = profile_handler
