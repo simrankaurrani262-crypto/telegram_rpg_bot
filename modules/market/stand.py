@@ -180,3 +180,6 @@ async def buy_from_stand(update: Update, context: ContextTypes.DEFAULT_TYPE, sel
         f"You bought {item['name']} for {item['price']:,}💰"
     
 )
+    from telegram.ext import CommandHandler
+
+stand_handler = CommandHandler('stand', command)
