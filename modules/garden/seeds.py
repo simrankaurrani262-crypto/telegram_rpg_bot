@@ -113,3 +113,7 @@ async def buy_seed(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: 
     
     # Refresh shop
     await command(update, context)
+
+from telegram.ext import CommandHandler
+
+seeds_handler = CommandHandler('seeds', command)
