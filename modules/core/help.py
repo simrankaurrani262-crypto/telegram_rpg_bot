@@ -105,3 +105,7 @@ Use /toggle to change settings!
         reply_markup=InlineKeyboardMarkup(
     keyboard)
     )
+
+from telegram.ext import CommandHandler
+
+help_handler = CommandHandler('help', help_command)
