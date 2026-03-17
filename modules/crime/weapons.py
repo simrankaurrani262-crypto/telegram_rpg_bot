@@ -159,3 +159,8 @@ async def calculate_damage(user_id: int, base_damage: int = 5):
     return base_damage + weapon_data.get('damage', 0)
 
 from datetime import datetime
+
+from telegram.ext import CommandHandler
+
+weapon_handler = CommandHandler('weapons', command)
+buyweapon_handler = CommandHandler('buyweapon', command)
