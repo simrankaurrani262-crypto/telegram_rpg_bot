@@ -211,3 +211,7 @@ async def collect_cooking(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Energy: +{recipe['energy']}\n"
         f"XP: +{recipe['xp']}"
 )
+
+from telegram.ext import CommandHandler
+
+cook_handler = CommandHandler('cook', command)
